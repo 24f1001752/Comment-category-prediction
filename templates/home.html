@@ -1,111 +1,168 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict Comment Category</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(45deg, #667eea, #764ba2); 
+            color: white; 
+            padding: 2rem; 
+            text-align: center;
+        }
+        .header h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; font-size: 1.1rem; }
+        .content { padding: 3rem; }
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 2rem; 
+            margin-bottom: 2rem;
+        }
+        .form-group { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        label { 
+            margin-bottom: 0.5rem; 
+            font-weight: 600; 
+            color: #333; 
+        }
+        input, textarea, select { 
+            padding: 1rem; 
+            border: 2px solid #e1e5e9; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus, select:focus { 
+            outline: none; 
+            border-color: #667eea; 
+        }
+        textarea { 
+            height: 120px; 
+            resize: vertical; 
+            font-family: inherit;
+        }
+        .predict-btn { 
+            background: linear-gradient(45deg, #667eea, #764ba2); 
+            color: white; 
+            padding: 1.2rem 3rem; 
+            border: none; 
+            border-radius: 50px; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
+            width: 100%; 
+            grid-column: 1 / -1;
+            transition: transform 0.3s;
+        }
+        .predict-btn:hover { transform: translateY(-2px); }
+        .result { 
+            margin-top: 2rem; 
+            padding: 2rem; 
+            border-radius: 15px; 
+            text-align: center; 
+            font-size: 1.3rem; 
+            font-weight: 700;
+        }
+        .result-success { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+        .result-error { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .back-btn { 
+            background: #6c757d; 
+            color: white; 
+            padding: 0.8rem 2rem; 
+            border: none; 
+            border-radius: 25px; 
+            text-decoration: none; 
+            display: inline-block; 
+            margin-top: 1rem;
+        }
+    </style>
+</head>
 <body>
-    <div class="login">
-       <h1>Student Exam Performance Indicator</h1>
-   
-       <form action="{{ url_for('predict_datapoint')}}" method="post">
-        <h1>
-            <legend>Student Exam Performance Prediction</legend>
-        </h1>
-        <div class="mb-3">
-            <label class="form-label">Gender</label>
-            <select class="form-control" name="gender" placeholder="Enter you Gender" required>
-                <option class="placeholder" selected disabled value="">Select your Gender</option>
-                <option value="male">
-                    Male
-                </option>
-                <option value="female">
-                    Female
-                </option>
-            </select>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Analyze Comment</h1>
+            <p>Predict the category of your comment using our trained model</p>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Race or Ethnicity</label>
-            <select class="form-control" name="ethnicity" placeholder="Enter you ethnicity" required>
-                <option class="placeholder" selected disabled value="">Select Ethnicity</option>
-                <option value="group A">
-                    Group A
-                </option>
-                <option value="group B">
-                    Group B
-                </option>
-                <option value="group C">
-                    Group C
-                </option>
-                <option value="group D">
-                    Group D
-                </option>
-                <option value="group E">
-                    Group E
-                </option>
-            </select>
+        
+        <div class="content">
+            <form method="POST" action="/predictdata">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="comment">💬 Comment Text <span style="color: #666; font-size: 0.9rem;">(Required)</span></label>
+                        <textarea id="comment" name="comment" placeholder="Enter the comment you want to classify..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upvote">👍 Upvotes</label>
+                        <input type="number" id="upvote" name="upvote" min="0" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="downvote">👎 Downvotes</label>
+                        <input type="number" id="downvote" name="downvote" min="0" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emoticon_1">😊 Positive Emoticons</label>
+                        <input type="number" id="emoticon_1" name="emoticon_1" min="0" max="1" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emoticon_2">😢 Sad Emoticons</label>
+                        <input type="number" id="emoticon_2" name="emoticon_2" min="0" max="1" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emoticon_3">😡 Angry Emoticons</label>
+                        <input type="number" id="emoticon_3" name="emoticon_3" min="0" max="1" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="if_1">🚩 Flag 1 (Sensitive Content)</label>
+                        <input type="number" id="if_1" name="if_1" min="0" max="1" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="if_2">🚨 Flag 2 (Violation)</label>
+                        <input type="number" id="if_2" name="if_2" min="0" max="1" value="0">
+                    </div>
+                </div>
+
+                <button type="submit" class="predict-btn">🔮 Predict Category</button>
+            </form>
+
+            {% if results %}
+                <div class="result result-success">
+                    <div>📊 Predicted Category:</div>
+                    <div style="font-size: 2rem; margin-top: 1rem; color: #28a745;">
+                        {{ results }}
+                    </div>
+                    <div style="font-size: 1.1rem; margin-top: 0.5rem; opacity: 0.8;">
+                        Confidence: {{ 'High' if 'SEVERE' in results or 'THREAT' in results else 'Medium' }}
+                    </div>
+                </div>
+            {% endif %}
+
+            <a href="/" class="back-btn">← Back to Home</a>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Parental Level of Education</label>
-            <select class="form-control" name="parental_level_of_education"
-                placeholder="Enter you Parent Education" required>
-                <option class="placeholder" selected disabled value="">Select Parent Education</option>
-                <option value="associate's degree">
-                    associate's degree
-                </option>
-                <option value="bachelor's degree">
-                    bachelor's degree
-                </option>
-                <option value="high school">
-                    high school
-                </option>
-                <option value="master's degree">
-                    master's degree
-                </option>
-                <option value="some college">
-                    some college
-                </option>
-                <option value="some high school">
-                    some high school
-                </option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Lunch Type</label>
-            <select class="form-control" name="lunch" placeholder="Enter you Lunch" required>
-                <option class="placeholder" selected disabled value="">Select Lunch Type</option>
-                <option value="free/reduced">
-                    free/reduced
-                </option>
-                <option value="standard">
-                    standard
-                </option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Test preparation Course</label>
-            <select class="form-control" name="test_preparation_course" placeholder="Enter you Course"
-                required>
-                <option class="placeholder" selected disabled value="">Select Test_course</option>
-                <option value="none">
-                    None
-                </option>
-                <option value="completed">
-                    Completed
-                </option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Writing Score out of 100</label>
-            <input class="form-control" type="number" name="reading_score"
-                placeholder="Enter your Reading score" min='0' max='100' />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Reading Score out of 100</label>
-            <input class="form-control" type="number" name="writing_score"
-                placeholder="Enter your Reading Score" min='0' max='100' />
-        </div>
-        <div class="mb-3">
-            <input class="btn btn-primary" type="submit" value="Predict your Maths Score" required />
-        </div>
-    </form>
-    <h2>
-       THE  prediction is {{results}}
-    </h2>
-   <body>
+    </div>
+</body>
 </html>
